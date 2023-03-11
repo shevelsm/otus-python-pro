@@ -26,6 +26,12 @@
 # Вам наверняка пригодится itertools.
 # Можно свободно определять свои функции и т.п.
 # -----------------
+import itertools
+
+
+# For better readability
+RANK = 0
+SUIT = 1
 
 
 def hand_rank(hand):
@@ -54,35 +60,53 @@ def hand_rank(hand):
 def card_ranks(hand):
     """Возвращает список рангов (его числовой эквивалент),
     отсортированный от большего к меньшему"""
-    return
+    # Ранги: 2, 3, 4, 5, 6, 7, 8, 9, 10 (ten, T), валет (jack, J), дама (queen, Q), король (king, K), туз (ace, A)
+    card_rank_map = {"T": 10, "J": 11, "Q": 12, "K": 13, "A": 14}
+    ranks = [int(card_rank_map.get(card[RANK], card[RANK])) for card in hand]
+    return sorted(ranks, reverse=True)
 
 
 def flush(hand):
     """Возвращает True, если все карты одной масти"""
-    return
+    # Можно решить через itertools.groupby()
+    suit = hand[0][SUIT]
+    for card in hand[1:]:
+        if card[SUIT] != suit:
+            return False
+    return True
 
 
 def straight(ranks):
     """Возвращает True, если отсортированные ранги формируют последовательность 5ти,
     где у 5ти карт ранги идут по порядку (стрит)"""
-    return
+    return len(set(ranks)) == 5 and (max(ranks) - min(ranks) == 4)
 
 
 def kind(n, ranks):
     """Возвращает первый ранг, который n раз встречается в данной руке.
     Возвращает None, если ничего не найдено"""
-    return
+    for rank in ranks:
+        if ranks.count(rank) == n: 
+            return rank
+    return None
 
 
 def two_pair(ranks):
     """Если есть две пары, то возврщает два соответствующих ранга,
     иначе возвращает None"""
-    return
+    top_pair = kind(2, ranks)
+    low_pair = kind(2, list(reversed(ranks)))
+    
+    if low_pair != top_pair and top_pair != None:
+        return (top_pair, low_pair)
+    return None
 
 
 def best_hand(hand):
     """Из "руки" в 7 карт возвращает лучшую "руку" в 5 карт """
-    return
+    hands_with_5_cards = [list(h) for h in itertools.combinations(hand, 5)]
+    # The key argument specifies a one-argument ordering function like that used for list.sort()
+    return max(hands_with_5_cards, key=hand_rank)
 
 
 def best_wild_hand(hand):
@@ -111,6 +135,7 @@ def test_best_wild_hand():
             == ['7C', '7D', '7H', '7S', 'JD'])
     print('OK')
 
+
 if __name__ == '__main__':
     test_best_hand()
-    test_best_wild_hand()
+    # test_best_wild_hand()
