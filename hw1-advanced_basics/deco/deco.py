@@ -15,36 +15,59 @@ def disable():
     return
 
 
-def decorator():
+def decorator(func):
     '''
     Decorate a decorator so that it inherits the docstrings
     and stuff from the function it's decorating.
     '''
-    return
+    def wrapper(*args):
+        return func(*args)
+    update_wrapper(wrapper, func)
+    return wrapper
 
 
-def countcalls():
+@decorator
+def countcalls(func):
     '''Decorator that counts calls made to the function decorated.'''
-    return
+    def wrapper(*args, **kwargs):
+        wrapper.calls += 1
+        return func(*args, **kwargs)
+    wrapper.calls = 0
+    return wrapper
 
 
-def memo():
+@decorator
+def memo(func):
     '''
     Memoize a function so that it caches all return values for
     faster future lookups.
     '''
-    return
+    cache_calls = {}
+
+    def wrapper(*args):
+        result_key = tuple(args)
+        if result_key not in cache_calls:
+            result = func(*args)
+            cache_calls[result_key] = result
+            update_wrapper(wrapper, func)
+            return result
+        else:
+            return cache_calls[result_key]
+
+    return wrapper
 
 
-def n_ary():
+def n_ary(func):
     '''
     Given binary function f(x, y), return an n_ary function such
     that f(x, y, z) = f(x, f(y,z)), etc. Also allow f(x) = x.
     '''
-    return
+    def wrapper(*args, **kwargs):
+        return func(*args, **kwargs) if len(args) <= 2 else func(args[0], wrapper(*args[1:]))
+    return wrapper
 
 
-def trace():
+def trace(pattern):
     '''Trace calls made to function decorated.
 
     @trace("____")
@@ -64,7 +87,21 @@ def trace():
      <-- fib(3) == 3
 
     '''
-    return
+
+    @decorator
+    def wrapper(func):
+        def traced(*args):
+            prefix = pattern * wrapper.depth
+            arg_str = ", ".join(str(a) for a in args)
+            print("{} --> {}({})".format(prefix, func.__name__, arg_str))
+            wrapper.depth += 1
+            result = func(*args)
+            print("{} <-- {}({}) == {}".format(prefix, func.__name__, arg_str, result))
+            wrapper.depth -= 1
+            return result
+        wrapper.depth = 0
+        return traced
+    return wrapper
 
 
 @memo
