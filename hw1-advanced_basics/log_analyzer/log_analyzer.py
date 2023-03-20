@@ -40,7 +40,7 @@ def parse_arguments() -> argparse.Namespace:
 
 
 def get_config_values(
-    init_config: dict, config_path: Optional[str] = None, section: str = "DEFAULT"
+    init_config: dict, config_path: Optional[str] = None
 ) -> Optional[namedtuple]:
     ReportConfig = namedtuple("ReportConfig", ["report_size", "report_dir", "log_dir"])
 
@@ -51,9 +51,9 @@ def get_config_values(
         config.read(config_path, encoding="utf-8")
 
     try:
-        report_size = config.get(section, "REPORT_SIZE")
-        report_dir = config.get(section, "REPORT_DIR")
-        log_dir = config.get(section, "LOG_DIR")
+        report_size = config.get("LOG_ANALYZER", "REPORT_SIZE")
+        report_dir = config.get("LOG_ANALYZER", "REPORT_DIR")
+        log_dir = config.get("LOG_ANALYZER", "LOG_DIR")
     except configparser.NoOptionError:
         return None
 
