@@ -129,6 +129,7 @@ dmypy.json
 .pyre/
 
 # My projects files
+.vscode
 ## hw1
 
 hw1-advanced_basics/log_analyzer/reports/report-*.html
