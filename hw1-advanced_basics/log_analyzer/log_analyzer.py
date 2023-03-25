@@ -5,6 +5,7 @@ import re
 import sys
 from collections import namedtuple
 from os.path import exists
+import traceback
 from typing import Optional
 
 
@@ -61,13 +62,20 @@ def get_config_values(
 
 
 def init_logging_config(filename: Optional[str] = None, level: str = "INFO") -> None:
-    logging.basicConfig(
-        filename=filename,
-        filemode="a",
-        format="[%(asctime)s] %(levelname).1s %(message)s",
-        datefmt="%Y.%m.%d %H:%M:%S",
-        level=getattr(logging, level),
-    )
+    try:
+        logging.basicConfig(
+            filename=filename,
+            filemode="a",
+            format="[%(asctime)s] %(levelname).1s %(message)s",
+            datefmt="%Y.%m.%d %H:%M:%S",
+            level=getattr(logging, level),
+        )
+    except TypeError:
+        logging.error('Error initializing the logging system')
+        traceback.print_stack()
+        return False
+
+    return True
 
 
 def main() -> None:
@@ -79,7 +87,10 @@ def main() -> None:
     if not report_config:
         sys.exit("There is no valid config!")
 
-    init_logging_config()
+    if not init_logging_config(filename='1'):
+        sys.exit("Check init_logging_config() usage!")
+
+    logging.info('Log analyzer script has finished the work!')
 
 
 if __name__ == "__main__":
