@@ -87,7 +87,7 @@ def get_the_last_log_file(config: type) -> str:
 
     last_filename = None
     last_date = datetime.strptime("19700101", dt_format)
-    LastLog = namedtuple("LastLog", ["filename", "date"])
+    LastLogFile = namedtuple("LastLogFile", ["filename", "date"])
 
     for filename in os.listdir(log_dir):
         path = os.path.join(log_dir, filename)
@@ -107,7 +107,7 @@ def get_the_last_log_file(config: type) -> str:
             last_filename = path
             last_date = dt
 
-    return LastLog(last_filename, last_date)
+    return LastLogFile(last_filename, last_date)
 
 
 def get_report_name(report_dt: datetime.date) -> Optional[str]:
@@ -138,24 +138,16 @@ def read_log_file(log_file: str, encoding: str = "utf-8") -> Iterator[str]:
             yield line
 
 
-def main() -> None:
-    args = parse_arguments()
-    if args.config_path and not os.path.exists(args.config_path):
-        sys.exit("No such config file!")
-
-    report_config = get_config_values(config, args.config_path)
-    if not report_config:
-        sys.exit("There is no valid config!")
-
+def main(report_config) -> None:
     if not init_logging_config(level="DEBUG"):
         sys.exit("Check init_logging_config() usage!")
 
-    LastLog = get_the_last_log_file(report_config)
-    if not LastLog:
+    last_log_file = get_the_last_log_file(report_config)
+    if not last_log_file:
         sys.exit("Can't get last log file! Finishing script...")
-    logging.debug("The last log file is - {}".format(LastLog.filename))
+    logging.debug("The last log file is - {}".format(last_log_file.filename))
 
-    report_name = get_report_name(LastLog.date)
+    report_name = get_report_name(last_log_file.date)
     logging.debug("Result file name will be - {}".format(report_name))
 
     if check_report_exists(report_config.report_dir, report_name):
@@ -165,4 +157,12 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    args = parse_arguments()
+    if args.config_path and not os.path.exists(args.config_path):
+        sys.exit("No such config file!")
+
+    config = get_config_values(config, args.config_path)
+    if not config:
+        sys.exit("There is no valid config!")
+
+    main(config)
