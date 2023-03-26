@@ -131,6 +131,13 @@ def get_open_log_func(filename: str) -> Callable:
         return open
 
 
+def read_log_file(log_file: str, encoding: str = "utf-8") -> Iterator[str]:
+    open_f = get_open_log_func(log_file)
+    with open_f(log_file, encoding=encoding) as file:
+        for line in file:
+            yield line
+
+
 def main() -> None:
     args = parse_arguments()
     if args.config_path and not os.path.exists(args.config_path):
