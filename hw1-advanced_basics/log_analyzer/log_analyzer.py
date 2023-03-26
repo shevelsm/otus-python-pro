@@ -109,6 +109,12 @@ def get_the_last_log_file(config: type) -> str:
     return LastLog(last_filename, last_date)
 
 
+def get_report_name(report_dt: datetime.date) -> Optional[str]:
+    return "report-{0}.{1}.{2}.html".format(
+        report_dt.year, report_dt.month, report_dt.day
+    )
+
+
 def main() -> None:
     args = parse_arguments()
     if args.config_path and not os.path.exists(args.config_path):
@@ -118,14 +124,16 @@ def main() -> None:
     if not report_config:
         sys.exit("There is no valid config!")
 
-    if not init_logging_config():
+    if not init_logging_config(level="DEBUG"):
         sys.exit("Check init_logging_config() usage!")
 
     LastLog = get_the_last_log_file(report_config)
     if not LastLog:
         sys.exit()
+    logging.debug("The last log file is - {}".format(LastLog.filename))
 
-    logging.debug("The last log file is {}".format(LastLog.filename))
+    report_name = get_report_name(LastLog.date)
+    logging.debug("Result file name will be - {}".format(report_name))
 
     logging.info("Log analyzer script has finished the work!")
 
