@@ -1,13 +1,14 @@
 import argparse
 import configparser
-from datetime import datetime
+import gzip
 import logging
 import os
 import re
 import sys
 import traceback
+from datetime import datetime
 from collections import namedtuple
-from typing import Optional
+from typing import Callable, Iterator, Optional
 
 
 #!/usr/bin/env python
@@ -103,7 +104,7 @@ def get_the_last_log_file(config: type) -> str:
             continue
 
         if dt and dt > last_date:
-            last_filename = filename
+            last_filename = path
             last_date = dt
 
     return LastLog(last_filename, last_date)
