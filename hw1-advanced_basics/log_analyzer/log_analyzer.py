@@ -124,13 +124,8 @@ def main() -> None:
     LastLog = get_the_last_log_file(report_config)
     if not LastLog:
         sys.exit()
-<<<<<<< HEAD
 
     logging.debug("The last log file is {}".format(LastLog.filename))
-=======
-    
-    logging.info("The last log file is {}".format(LastLog.filename))
->>>>>>> 5fb1193da4e7bc000d1e3160154826f63cd38ac5
 
     logging.info("Log analyzer script has finished the work!")
 
