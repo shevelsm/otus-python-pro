@@ -116,6 +116,21 @@ def get_report_name(report_dt: datetime.date) -> Optional[str]:
     )
 
 
+def check_report_exists(log_path: str, report_file: str) -> bool:
+    if report_file:
+        report_path = os.path.join(log_path, report_file)
+        if os.path.exists(report_path) and os.path.isfile(report_path):
+            return True
+    return False
+
+
+def get_open_log_func(filename: str) -> Callable:
+    if re.search(r"[.]gz$", filename):
+        return gzip.open
+    else:
+        return open
+
+
 def main() -> None:
     args = parse_arguments()
     if args.config_path and not os.path.exists(args.config_path):
@@ -135,6 +150,9 @@ def main() -> None:
 
     report_name = get_report_name(LastLog.date)
     logging.debug("Result file name will be - {}".format(report_name))
+
+    if check_report_exists(report_config.report_dir, report_name):
+        sys.exit("The report file ({}) already exists".format(report_name))
 
     logging.info("Log analyzer script has finished the work!")
 
