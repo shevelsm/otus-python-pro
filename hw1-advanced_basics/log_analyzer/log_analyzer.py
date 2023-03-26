@@ -129,7 +129,7 @@ def main() -> None:
 
     LastLog = get_the_last_log_file(report_config)
     if not LastLog:
-        sys.exit()
+        sys.exit("Can't get last log file! Finishing script...")
     logging.debug("The last log file is - {}".format(LastLog.filename))
 
     report_name = get_report_name(LastLog.date)
