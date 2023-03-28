@@ -4,11 +4,12 @@ import gzip
 import logging
 import os
 import re
+from statistics import median
 import sys
 import traceback
 from datetime import datetime
 from collections import namedtuple
-from typing import Callable, Iterator, NamedTuple, Optional
+from typing import Callable, Iterator, List, NamedTuple, Optional, Tuple
 
 
 #!/usr/bin/env python
@@ -100,7 +101,7 @@ def get_the_last_log_file(config: type) -> str:
                 "Bad log_date ({}) for log_file {}".format(
                     filename, m.group("full_date")
                 )
-            ) 
+            )
             continue
 
         if dt and dt > last_date:
@@ -143,7 +144,7 @@ def handle_log_line(line: str) -> NamedTuple:
     LogLine = namedtuple("LogLine", ["url", "time"])
     if m := log_regexp.search(line):
         return LogLine(m.group("url"), float(m.group("time")))
-    
+
     return LogLine(None, 0)
 
 
@@ -154,19 +155,47 @@ def parse_logs(filename: str) -> NamedTuple:
     total_time = 0
 
     open_f = get_open_log_func(filename)
-    with open_f(filename, mode='r') as log_file:
+    with open_f(filename, mode="r") as log_file:
         for line in log_file:
-            url, rt = handle_log_line(line)
+            url, time = handle_log_line(line)
             total_count += 1
-            total_time += rt
+            total_time += time
             if url not in url_data:
-                url_data[url] = [rt]
+                url_data[url] = [time]
             else:
-                url_data[url].append(rt)
-            if total_count > 10:
-                break
+                url_data[url].append(time)
 
     return LogData(url_data, total_count, total_time)
+
+
+def handle_log_data(log_data: NamedTuple) -> List:
+    urls = log_data.url_data
+    result = []
+
+    for url in urls:
+        count = len(urls[url])
+        count_perc = 100 * float(count) / log_data.total_count
+        time_avg = sum(urls[url]) / count
+        time_max = max(urls[url])
+        time_med = median(sorted(urls[url]))
+        time_sum = sum(urls[url])
+        time_perc = 100 * time_sum / log_data.total_time
+        result.append(
+            {
+                "url": url,
+                "count": count,
+                "count_perc": count_perc,
+                "time_avg": time_avg,
+                "time_max": time_max,
+                "time_med": time_med,
+                "time_perc": time_perc,
+                "time_sum": time_sum,
+            }
+        )
+
+    result.sort(key=lambda res: res["time_sum"], reverse=True)
+    return result
+
 
 
 def main(report_config) -> None:
@@ -184,7 +213,9 @@ def main(report_config) -> None:
     if check_report_exists(report_config.report_dir, report_name):
         sys.exit("The report file ({}) already exists".format(report_name))
 
-    print(parse_logs(last_log_file.filename))
+    log_data = parse_logs(last_log_file.filename)
+    result = handle_log_data(log_data)
+    print(result)
 
     logging.info("Log analyzer script has finished the work!")
 
