@@ -8,7 +8,7 @@ import sys
 import traceback
 from datetime import datetime
 from collections import namedtuple
-from typing import Callable, Iterator, Optional
+from typing import Callable, Iterator, NamedTuple, Optional
 
 
 #!/usr/bin/env python
@@ -100,7 +100,7 @@ def get_the_last_log_file(config: type) -> str:
                 "Bad log_date ({}) for log_file {}".format(
                     filename, m.group("full_date")
                 )
-            )
+            ) 
             continue
 
         if dt and dt > last_date:
@@ -138,6 +138,37 @@ def read_log_file(log_file: str, encoding: str = "utf-8") -> Iterator[str]:
             yield line
 
 
+def handle_log_line(line: str) -> NamedTuple:
+    log_regexp = re.compile(r"\"\w+ (?P<url>(.*?)) HTTP.* (?P<time>[0-9.]+)$")
+    LogLine = namedtuple("LogLine", ["url", "time"])
+    if m := log_regexp.search(line):
+        return LogLine(m.group("url"), float(m.group("time")))
+    
+    return LogLine(None, 0)
+
+
+def parse_logs(filename: str) -> NamedTuple:
+    LogData = namedtuple("LogData", ["url_data", "total_count", "total_time"])
+    url_data = {}
+    total_count = 0
+    total_time = 0
+
+    open_f = get_open_log_func(filename)
+    with open_f(filename, mode='r') as log_file:
+        for line in log_file:
+            url, rt = handle_log_line(line)
+            total_count += 1
+            total_time += rt
+            if url not in url_data:
+                url_data[url] = [rt]
+            else:
+                url_data[url].append(rt)
+            if total_count > 10:
+                break
+
+    return LogData(url_data, total_count, total_time)
+
+
 def main(report_config) -> None:
     if not init_logging_config(level="DEBUG"):
         sys.exit("Check init_logging_config() usage!")
@@ -152,6 +183,8 @@ def main(report_config) -> None:
 
     if check_report_exists(report_config.report_dir, report_name):
         sys.exit("The report file ({}) already exists".format(report_name))
+
+    print(parse_logs(last_log_file.filename))
 
     logging.info("Log analyzer script has finished the work!")
 
