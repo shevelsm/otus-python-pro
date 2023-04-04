@@ -1,5 +1,4 @@
 import argparse
-import configparser
 import gzip
 import logging
 import os
@@ -7,6 +6,7 @@ import re
 from statistics import median
 import sys
 import traceback
+from configparser import ConfigParser
 from datetime import datetime
 from collections import namedtuple
 from typing import Callable, Iterator, List, NamedTuple, Optional, Tuple
@@ -21,7 +21,13 @@ from typing import Callable, Iterator, List, NamedTuple, Optional, Tuple
 #                     '"$http_user_agent" "$http_x_forwarded_for" "$http_X_REQUEST_ID" "$http_X_RB_USER" '
 #                     '$request_time';
 
-config = {"REPORT_SIZE": 1000, "REPORT_DIR": "./reports", "LOG_DIR": "./log"}
+config = {
+    "REPORT_SIZE": 1000,
+    "REPORT_DIR": "./reports",
+    "LOG_DIR": "./log",
+    "REPORT_TEMPLATE": "report.html",
+    "MAX_ERROR_RATE": 0.8,
+}
 
 
 def parse_arguments() -> argparse.Namespace:
@@ -38,25 +44,12 @@ def parse_arguments() -> argparse.Namespace:
     return args
 
 
-def get_config_values(
-    init_config: dict, config_path: Optional[str] = None
-) -> Optional[namedtuple]:
-    ReportConfig = namedtuple("ReportConfig", ["report_size", "report_dir", "log_dir"])
-
-    config = configparser.ConfigParser()
+def get_config_values(init_config: dict, config_path: str) -> ConfigParser:
+    config = ConfigParser()
     config.read_dict({"DEFAULT": init_config})
+    config.read(config_path, encoding="utf-8")
 
-    if config_path:
-        config.read(config_path, encoding="utf-8")
-
-    try:
-        report_size = config.get("DEFAULT", "REPORT_SIZE")
-        report_dir = config.get("DEFAULT", "REPORT_DIR")
-        log_dir = config.get("DEFAULT", "LOG_DIR")
-    except (configparser.NoOptionError, configparser.NoSectionError):
-        return None
-
-    return ReportConfig(report_size, report_dir, log_dir)
+    return config
 
 
 def init_logging_config(filename: Optional[str] = None, level: str = "INFO") -> None:
@@ -81,7 +74,7 @@ def get_the_last_log_file(config: type) -> str:
     dt_regex = re.compile(
         r"^nginx-access-ui\.log-(?P<full_date>(?P<year>\d{4})(?P<month>\d{2})(?P<day>\d{2}))"
     )
-    log_dir = config.log_dir
+    log_dir = config.get("DEFAULT", "LOG_DIR")
     if not log_dir or not os.path.exists(log_dir) or not os.path.isdir(log_dir):
         logging.error("Log directory was not found. LOG_DIR: {}".format(log_dir))
         return None
@@ -149,28 +142,46 @@ def handle_log_line(line: str) -> NamedTuple:
 
 
 def parse_logs(filename: str) -> NamedTuple:
-    LogData = namedtuple("LogData", ["url_data", "total_count", "total_time"])
+    LogData = namedtuple(
+        "LogData", ["url_data", "total_time", "total_count", "errors_count"]
+    )
     url_data = {}
     total_count = 0
     total_time = 0
+    errors_count = 0
 
     open_f = get_open_log_func(filename)
     with open_f(filename, mode="r") as log_file:
         for line in log_file:
             url, time = handle_log_line(line)
+
+            if not (url and line):
+                errors_count += 1
             total_count += 1
             total_time += time
+
             if url not in url_data:
                 url_data[url] = [time]
             else:
                 url_data[url].append(time)
 
-    return LogData(url_data, total_count, total_time)
+    return LogData(url_data, total_time, total_count, errors_count)
 
 
-def handle_log_data(log_data: NamedTuple) -> List:
+def handle_log_data(log_data: NamedTuple, report_config: ConfigParser) -> Optional[List]:
     urls = log_data.url_data
     result = []
+
+    error_rate = log_data.errors_count / log_data.total_count
+    max_error_rate = float(report_config.get("DEFAULT", "MAX_ERROR_RATE"))
+
+    if error_rate >= max_error_rate:
+        logging.error(
+            "Maximum error rate {} was exceeded ({})".format(
+                max_error_rate, error_rate
+            )
+        )
+        return None
 
     for url in urls:
         count = len(urls[url])
@@ -197,7 +208,6 @@ def handle_log_data(log_data: NamedTuple) -> List:
     return result
 
 
-
 def main(report_config) -> None:
     if not init_logging_config(level="DEBUG"):
         sys.exit("Check init_logging_config() usage!")
@@ -210,12 +220,11 @@ def main(report_config) -> None:
     report_name = get_report_name(last_log_file.date)
     logging.debug("Result file name will be - {}".format(report_name))
 
-    if check_report_exists(report_config.report_dir, report_name):
+    if check_report_exists(report_config.get("DEFAULT", "REPORT_DIR"), report_name):
         sys.exit("The report file ({}) already exists".format(report_name))
 
     log_data = parse_logs(last_log_file.filename)
-    result = handle_log_data(log_data)
-    print(result)
+    result = handle_log_data(log_data, report_config)
 
     logging.info("Log analyzer script has finished the work!")
 
@@ -226,7 +235,4 @@ if __name__ == "__main__":
         sys.exit("No such config file!")
 
     config = get_config_values(config, args.config_path)
-    if not config:
-        sys.exit("There is no valid config!")
-
     main(config)
