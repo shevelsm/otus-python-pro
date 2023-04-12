@@ -1,5 +1,6 @@
 import argparse
 import gzip
+import json
 import logging
 import os
 import re
@@ -9,7 +10,7 @@ import traceback
 from configparser import ConfigParser
 from datetime import datetime
 from collections import namedtuple
-from typing import Callable, Iterator, List, NamedTuple, Optional, Tuple
+from typing import Callable, Iterator, NamedTuple, Optional
 
 
 #!/usr/bin/env python
@@ -69,7 +70,7 @@ def init_logging_config(filename: Optional[str] = None, level: str = "INFO") -> 
     return True
 
 
-def get_the_last_log_file(config: type) -> str:
+def get_the_last_log_file(config: ConfigParser) -> NamedTuple:
     dt_format = "%Y%m%d"
     dt_regex = re.compile(
         r"^nginx-access-ui\.log-(?P<full_date>(?P<year>\d{4})(?P<month>\d{2})(?P<day>\d{2}))"
@@ -168,18 +169,18 @@ def parse_logs(filename: str) -> NamedTuple:
     return LogData(url_data, total_time, total_count, errors_count)
 
 
-def handle_log_data(log_data: NamedTuple, report_config: ConfigParser) -> Optional[List]:
+def handle_log_data(
+    log_data: NamedTuple, config: ConfigParser
+) -> Optional[list]:
     urls = log_data.url_data
     result = []
 
     error_rate = log_data.errors_count / log_data.total_count
-    max_error_rate = float(report_config.get("DEFAULT", "MAX_ERROR_RATE"))
+    max_error_rate = float(config.get("DEFAULT", "MAX_ERROR_RATE"))
 
     if error_rate >= max_error_rate:
         logging.error(
-            "Maximum error rate {} was exceeded ({})".format(
-                max_error_rate, error_rate
-            )
+            "Maximum error rate {} was exceeded ({})".format(max_error_rate, error_rate)
         )
         return None
 
@@ -208,6 +209,17 @@ def handle_log_data(log_data: NamedTuple, report_config: ConfigParser) -> Option
     return result
 
 
+def fill_html_report(config: ConfigParser, filename: str, result_data: dict) -> bool:
+    template = config.get("DEFAULT", "TEMPLATE")
+    with open(template, mode="r") as template:
+        with open(filename, mode="w") as report:
+            for line in template:
+                if "$table_json" in line:
+                    report.write(line.replace("$table_json", json.dumps(result_data)))
+                else:
+                    report.write(line)
+
+
 def main(report_config) -> None:
     if not init_logging_config(level="DEBUG"):
         sys.exit("Check init_logging_config() usage!")
@@ -225,6 +237,8 @@ def main(report_config) -> None:
 
     log_data = parse_logs(last_log_file.filename)
     result = handle_log_data(log_data, report_config)
+
+    fill_html_report(report_config, report_name, result)
 
     logging.info("Log analyzer script has finished the work!")
 
