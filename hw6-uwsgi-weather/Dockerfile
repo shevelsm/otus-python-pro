@@ -11,4 +11,4 @@ COPY ip2weather .
 
 EXPOSE 80
 
-ENTRYPOINT ["uwsgi", "--http", ":80", "--wsgi-file", "main.py"]
+ENTRYPOINT ["uwsgi", "--http", ":80", "--wsgi-file", "ip2w.py"]
