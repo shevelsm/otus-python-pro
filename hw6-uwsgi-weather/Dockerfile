@@ -5,10 +5,10 @@ RUN yum install -y epel-release \
     && yum -y clean all \
     && pip3 install uwsgi
 
-WORKDIR /srv/ip2weather
+WORKDIR /srv/ip2w
 
-COPY ip2weather .
+COPY ip2w .
 
-EXPOSE 80
+EXPOSE 9090
 
-ENTRYPOINT ["uwsgi", "--http", ":80", "--wsgi-file", "ip2w.py"]
+ENTRYPOINT ["uwsgi", "ip2w.ini"]
