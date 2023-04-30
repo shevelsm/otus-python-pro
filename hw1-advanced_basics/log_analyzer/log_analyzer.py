@@ -176,6 +176,7 @@ def handle_log_data(
     result = []
 
     error_rate = log_data.errors_count / log_data.total_count
+    logging.debug("The error rate in the log is - {}".format(round(error_rate, 2)))
     max_error_rate = float(config.get("DEFAULT", "MAX_ERROR_RATE"))
 
     if error_rate >= max_error_rate:
@@ -210,9 +211,11 @@ def handle_log_data(
 
 
 def fill_html_report(config: ConfigParser, filename: str, result_data: dict) -> bool:
-    template = config.get("DEFAULT", "TEMPLATE")
+    template = config.get("DEFAULT", "REPORT_TEMPLATE")
+    report_file = "./{}/{}".format(config.get("DEFAULT", "REPORT_DIR"), filename)
+    
     with open(template, mode="r") as template:
-        with open(filename, mode="w") as report:
+        with open(report_file, mode="w") as report:
             for line in template:
                 if "$table_json" in line:
                     report.write(line.replace("$table_json", json.dumps(result_data)))
@@ -236,10 +239,14 @@ def main(report_config) -> None:
         sys.exit("The report file ({}) already exists".format(report_name))
 
     log_data = parse_logs(last_log_file.filename)
+    if not log_data:
+        sys.exit("There are too many errors in parsing! Check log file format - {}".format(last_log_file))
+    logging.info("Log file has been parsed successfully...")
+
     result = handle_log_data(log_data, report_config)
-
+    logging.info("Log data has been processed successfully...")
+    
     fill_html_report(report_config, report_name, result)
-
     logging.info("Log analyzer script has finished the work!")
 
 
