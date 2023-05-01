@@ -29,6 +29,11 @@ config = {
     "REPORT_TEMPLATE": "report.html",
     "MAX_ERROR_RATE": 0.8,
 }
+LastLogFile = namedtuple("LastLogFile", ["filename", "date"])
+LogLine = namedtuple("LogLine", ["url", "time"])
+LogData = namedtuple(
+    "LogData", ["url_data", "total_time", "total_count", "errors_count"]
+)
 
 
 def parse_arguments() -> argparse.Namespace:
@@ -82,7 +87,6 @@ def get_the_last_log_file(config: ConfigParser) -> NamedTuple:
 
     last_filename = None
     last_date = datetime.strptime("19700101", dt_format)
-    LastLogFile = namedtuple("LastLogFile", ["filename", "date"])
 
     for filename in os.listdir(log_dir):
         path = os.path.join(log_dir, filename)
@@ -135,7 +139,6 @@ def read_log_file(log_file: str, encoding: str = "utf-8") -> Iterator[str]:
 
 def handle_log_line(line: str) -> NamedTuple:
     log_regexp = re.compile(r"\"\w+ (?P<url>(.*?)) HTTP.* (?P<time>[0-9.]+)$")
-    LogLine = namedtuple("LogLine", ["url", "time"])
     if m := log_regexp.search(line):
         return LogLine(m.group("url"), float(m.group("time")))
 
@@ -143,9 +146,6 @@ def handle_log_line(line: str) -> NamedTuple:
 
 
 def parse_logs(filename: str) -> NamedTuple:
-    LogData = namedtuple(
-        "LogData", ["url_data", "total_time", "total_count", "errors_count"]
-    )
     url_data = {}
     total_count = 0
     total_time = 0
@@ -169,9 +169,7 @@ def parse_logs(filename: str) -> NamedTuple:
     return LogData(url_data, total_time, total_count, errors_count)
 
 
-def handle_log_data(
-    log_data: NamedTuple, config: ConfigParser
-) -> Optional[list]:
+def handle_log_data(log_data: NamedTuple, config: ConfigParser) -> Optional[list]:
     urls = log_data.url_data
     result = []
 
@@ -213,7 +211,7 @@ def handle_log_data(
 def fill_html_report(config: ConfigParser, filename: str, result_data: dict) -> bool:
     template = config.get("DEFAULT", "REPORT_TEMPLATE")
     report_file = "./{}/{}".format(config.get("DEFAULT", "REPORT_DIR"), filename)
-    
+
     with open(template, mode="r") as template:
         with open(report_file, mode="w") as report:
             for line in template:
@@ -240,12 +238,16 @@ def main(report_config) -> None:
 
     log_data = parse_logs(last_log_file.filename)
     if not log_data:
-        sys.exit("There are too many errors in parsing! Check log file format - {}".format(last_log_file))
+        sys.exit(
+            "There are too many errors in parsing! Check log file format - {}".format(
+                last_log_file
+            )
+        )
     logging.info("Log file has been parsed successfully...")
 
     result = handle_log_data(log_data, report_config)
     logging.info("Log data has been processed successfully...")
-    
+
     fill_html_report(report_config, report_name, result)
     logging.info("Log analyzer script has finished the work!")
 
