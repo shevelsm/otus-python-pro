@@ -176,7 +176,7 @@ def handle_log_data(
     result = []
 
     error_rate = log_data.errors_count / log_data.total_count
-    logging.debug("The error rate in the log is - {}".format(round(error_rate, 2)))
+    logging.debug("The error rate in the log is - {}".format(round(error_rate, 3)))
     max_error_rate = float(config.get("DEFAULT", "MAX_ERROR_RATE"))
 
     if error_rate >= max_error_rate:
@@ -197,12 +197,12 @@ def handle_log_data(
             {
                 "url": url,
                 "count": count,
-                "count_perc": count_perc,
-                "time_avg": time_avg,
-                "time_max": time_max,
-                "time_med": time_med,
-                "time_perc": time_perc,
-                "time_sum": time_sum,
+                "count_perc": round(count_perc, 3),
+                "time_avg": round(time_avg, 3),
+                "time_max": round(time_max, 3),
+                "time_med": round(time_med, 3),
+                "time_perc": round(time_perc, 3),
+                "time_sum": round(time_sum, 3),
             }
         )
 
