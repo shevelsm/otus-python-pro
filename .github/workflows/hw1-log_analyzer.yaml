@@ -12,5 +12,7 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: "3.x"
+      - name: Move to log_analyzer dir
+        run: cd ./hw1-advanced_basics/log_analyzer
       - name: Test with unittest
-        run: python3 -m unittest -v ./hw1-advanced_basics/log_analyzer/tests.py
+        run: python3 -m unittest -v tests.py
