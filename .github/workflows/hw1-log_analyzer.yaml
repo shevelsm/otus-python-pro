@@ -1,0 +1,9 @@
+steps:
+- uses: actions/checkout@v3
+- name: Set up Python
+  uses: actions/setup-python@v4
+  with:
+    python-version: '3.x'
+- name: Test with unittest
+  run: |
+    python3 -m unittest -v ./hw1-advanced_basics/log_analyzer/tests.py
