@@ -1,4 +1,5 @@
 from datetime import datetime
+import gzip
 import unittest
 
 import log_analyzer
@@ -34,3 +35,11 @@ class LogAnalyzerTest(unittest.TestCase):
         )
         request = log_analyzer.handle_log_line(line)
         self.assertIsNone(request.url)
+
+    def test_open_gzip_log_func(self):
+        filename = "./test/gz_log/nginx-access-ui.log-20180830.gz"
+        self.assertEqual(log_analyzer.get_open_log_func(filename), gzip.open)
+
+    def test_open_plain_log_func(self):
+        filename = "./test/gz_log/nginx-access-ui.log-20180830"
+        self.assertEqual(log_analyzer.get_open_log_func(filename), open)
