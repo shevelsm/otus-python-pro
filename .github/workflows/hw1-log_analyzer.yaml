@@ -3,7 +3,7 @@ name: Log Analyzer
 on:
   push:
     branches:
-      - main
+      - master
     paths:
       - "./hw1-advanced_basics"
 
