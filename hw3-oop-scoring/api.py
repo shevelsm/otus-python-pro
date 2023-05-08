@@ -191,10 +191,6 @@ class OnlineScoreRequest(MethodRequest):
             return True
         return False
 
-    @property
-    def has(self):
-        return ["email", "phone"]
-
 
 def check_auth(request):
     if request.is_admin:
