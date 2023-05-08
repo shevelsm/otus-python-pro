@@ -1,9 +1,9 @@
-name: Log Analyzer
+name: Scoring API
 
 on:
   push:
     paths:
-      - "./hw1-advanced_basics"
+      - "./hw3-oop-scoring"
 
 jobs:
   tests:
@@ -16,5 +16,5 @@ jobs:
         with:
           python-version: "3.x"
       - name: Test with unittest
-        working-directory: ./hw1-advanced_basics/log_analyzer
+        working-directory: ./hw3-oop-scoring
         run: python3 -m unittest -v tests.py
