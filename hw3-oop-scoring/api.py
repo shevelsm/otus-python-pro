@@ -205,7 +205,6 @@ def check_auth(request):
 
 
 def online_score_handler(request, context, store):
-    context["has"] = request.arguments
     if request.is_admin:
         return {"score": 42}, OK
 
