@@ -19,4 +19,4 @@ jobs:
           python-version: "3.x"
       - name: Test with unittest
         working-directory: ./hw3-oop-scoring
-        run: python3 -m unittest -v tests.py
+        run: python3 -m unittest -v
