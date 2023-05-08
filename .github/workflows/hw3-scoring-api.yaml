@@ -5,7 +5,7 @@ on:
     branches:
       - master
     paths:
-      - "./hw3-oop-scoring"
+      - "hw3-oop-scoring/**"
 
 jobs:
   tests:

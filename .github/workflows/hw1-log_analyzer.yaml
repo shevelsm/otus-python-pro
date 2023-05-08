@@ -5,7 +5,7 @@ on:
     branches:
       - master
     paths:
-      - "./hw1-advanced_basics"
+      - "hw1-advanced_basics/**"
 
 jobs:
   tests:
