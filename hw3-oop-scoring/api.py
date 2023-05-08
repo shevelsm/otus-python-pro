@@ -149,7 +149,6 @@ class Request(metaclass=RequestFields):
             value = kwargs.get(attribute)
             setattr(self, attribute, value)
 
-
     def validate(self):
         for attribute, field in self._fields.items():
             value = getattr(self, attribute)
@@ -191,7 +190,7 @@ class OnlineScoreRequest(MethodRequest):
         ):
             return True
         return False
-    
+
     @property
     def has(self):
         return ["email", "phone"]
@@ -226,17 +225,17 @@ def online_score_handler(request, context, store):
             "code": INVALID_REQUEST,
             "error": "At least one pair of fields must be defined (phone + email) or (first_name  + last_name ) or (birthday + gender)",
         }, INVALID_REQUEST
-    
+
     context["has"] = list(request.arguments.keys())
 
     score = get_score(
         store=store,
-        phone=r.phone, 
-        email=r.email, 
-        birthday=r.birthday, 
-        gender=r.gender, 
-        first_name=r.first_name, 
-        last_name=r.last_name, 
+        phone=r.phone,
+        email=r.email,
+        birthday=r.birthday,
+        gender=r.gender,
+        first_name=r.first_name,
+        last_name=r.last_name,
     )
     return {"score": score}, OK
 
@@ -248,8 +247,8 @@ def clients_interests_handler(request, context, store):
     except (ValueError, TypeError) as err:
         error = {"code": INVALID_REQUEST, "error": str(err)}
         return error, INVALID_REQUEST
-    
-    context['nclients'] = len(r.client_ids)
+
+    context["nclients"] = len(r.client_ids)
 
     interests = {}
     for client_id in r.client_ids:
