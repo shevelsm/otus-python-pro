@@ -2,6 +2,8 @@ name: Log Analyzer
 
 on:
   push:
+    branches:
+      - main
     paths:
       - "./hw1-advanced_basics"
 

@@ -2,6 +2,8 @@ name: Scoring API
 
 on:
   push:
+    branches:
+      - main
     paths:
       - "./hw3-oop-scoring"
 
