@@ -13,6 +13,9 @@ def get_score(store, phone, email, birthday=None, gender=None, first_name=None, 
     key = 'uid:' + hashlib.md5(''.join(key_parts).encode()).hexdigest()
     
     score = store.get(key) or 0
+    if score is not None:
+        return score
+    
     if phone:
         score += 1.5
     if email:
