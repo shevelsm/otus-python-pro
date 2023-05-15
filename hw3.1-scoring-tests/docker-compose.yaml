@@ -1,0 +1,15 @@
+version: '2'
+
+networks:
+  scoring-api:
+    driver: bridge
+
+services:
+  redis:
+    image: 'bitnami/redis:latest'
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+    ports:
+      - 6379:6379
+    # networks:
+    #   - scoring-api
