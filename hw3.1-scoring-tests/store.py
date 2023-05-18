@@ -28,7 +28,7 @@ class RedisAsStorage:
             host=self.host,
             port=self.port,
             db=self.db,
-            retry=Retry(ExponentialBackoff(), self.retries),
+            retry=Retry(ExponentialBackoff(cap=0.512, base=0.008), self.retries),
             retry_on_error=[BusyLoadingError, ConnectionError, TimeoutError],
             socket_connect_timeout=self.timeout,
             socket_timeout=self.timeout,
