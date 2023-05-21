@@ -4,6 +4,9 @@ from redis.client import Redis
 from redis.exceptions import BusyLoadingError, ConnectionError, TimeoutError
 
 
+DEFAULT_TTL = 100
+
+
 class RedisAsStorage:
     def __init__(
         self,
@@ -41,7 +44,7 @@ class RedisAsStorage:
         except:
             raise ConnectionError
 
-    def set(self, key, value, ttl):
+    def set(self, key, value, ttl=DEFAULT_TTL):
         try:
             return self.con.set(key, value, ex=ttl)
         except:
