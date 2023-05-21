@@ -86,6 +86,9 @@ class EmailField(CharField):
 
 class PhoneField(Field):
     def validate(self, value: Union[int, str]) -> str:
+        if not isinstance(value, (str, int)):
+            raise TypeError("The phone number value should be a string or an integer" )
+
         value = str(value)
         super().validate(value)
         if not re.match(phone_pattern, value):
@@ -111,16 +114,17 @@ class BirthDayField(DateField):
         date = datetime.datetime.strptime(value, "%d.%m.%Y")
         age = datetime.datetime.now().year - date.year
         if age < 0 or age > PENSION_AGE:
-            raise ValueError(
-                "Age should be in range 0 < age <= PENSION_AGE"
-            )
+            raise ValueError("Age should be in range 0 < age <= PENSION_AGE")
         return value
 
 
 class GenderField(Field):
     def validate(self, value: int) -> int:
+        if not isinstance(value, int):
+            raise TypeError('GenderField should be a integer')
+
         super().validate(value)
-        if not isinstance(value, int) or value not in GENDERS:
+        if value not in GENDERS:
             raise ValueError("The gender field must be an integer value - 0, 1 or 2")
         return value
 

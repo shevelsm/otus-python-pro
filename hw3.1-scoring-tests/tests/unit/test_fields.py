@@ -9,28 +9,24 @@ class TestCharField(unittest.TestCase):
     def setUp(self):
         self.field = api.CharField()
 
-    @cases(['some text', ''])
+    @cases(['some text', '123'])
     def test_ok(self, value):
-        self.assertIsNone(self.field.validate(value))
+        self.assertEqual(self.field.validate(value), value)
 
-    @cases([12312, {}, []])
+    @cases([12312, {1: 2312}, [1, 2, 3, 1, 2]])
     def test_invalid_type(self, value):
         self.assertRaises(TypeError, self.field.validate, value)
-
-    @cases(['some text', None, []])
-    def test_to_python(self, value):
-        self.assertEqual(self.field.to_python(value), value)
 
 
 class TestArgumentsField(unittest.TestCase):
     def setUp(self):
         self.field = api.ArgumentsField()
 
-    @cases([{'k': 123}, {}])
+    @cases([{'k': 123}, {1: 123}])
     def test_ok(self, value):
-        self.assertIsNone(self.field.validate(value))
+        self.assertEqual(self.field.validate(value), value)
 
-    @cases(['str', 12312, []])
+    @cases(['str', 12312, [1, 2, 3, 1, 2]])
     def test_invalid_type(self, value):
         self.assertRaises(TypeError, self.field.validate, value)
 
@@ -41,15 +37,15 @@ class TestEmailField(TestCharField):
 
     @cases(['user1@mail.ru'])
     def test_ok(self, value):
-        self.assertIsNone(self.field.validate(value))
+        self.assertEqual(self.field.validate(value), value)
 
-    @cases([12312, {}, []])
+    @cases([12312, {1: 2312}, [1, 2, 3, 1, 2]])
     def test_invalid_type(self, value):
         self.assertRaises(TypeError, self.field.validate, value)
 
     @cases(['some text', ''])
     def test_invalid_format(self, value):
-        self.assertRaises(TypeError, self.field.validate, value)
+        self.assertRaises(ValueError, self.field.validate, value)
 
 
 class TestPhoneField(unittest.TestCase):
@@ -58,7 +54,7 @@ class TestPhoneField(unittest.TestCase):
 
     @cases([71234567890, '71234567890'])
     def test_ok(self, value):
-        self.assertIsNone(self.field.validate(value))
+        self.assertEqual(self.field.validate(value), str(value))
 
     @cases([12.312, {}, []])
     def test_invalid_type(self, value):
@@ -79,22 +75,15 @@ class TestDateField(unittest.TestCase):
 
     @cases(['01.01.2019'])
     def test_ok(self, value):
-        self.assertIsNone(self.field.validate(value))
+        self.assertEqual(self.field.validate(value), value)
 
-    @cases([12312, {}, []])
+    @cases([12312, {1: 2312}, [1, 2, 3, 1, 2]])
     def test_invalid_type(self, value):
         self.assertRaises(TypeError, self.field.validate, value)
 
     @cases(['01012019', '40.01.2019'])
     def test_invalid_format(self, value):
         self.assertRaises(ValueError, self.field.validate, value)
-
-    @cases([
-        ['01.01.2019', datetime(2019, 1, 1)],
-        ['01012019', '01012019'],
-    ])
-    def test_to_python(self, value):
-        self.assertEqual(self.field.to_python(value[0]), value[1])
 
 
 class TestBirthDayField(unittest.TestCase):
@@ -103,9 +92,9 @@ class TestBirthDayField(unittest.TestCase):
 
     @cases(['01.01.2019'])
     def test_ok(self, value):
-        self.assertIsNone(self.field.validate(value))
+        self.assertEqual(self.field.validate(value), value)
 
-    @cases([12312, {}, []])
+    @cases([12312, {1: 2312}, [1, 2, 3, 1, 2]])
     def test_invalid_type(self, value):
         self.assertRaises(TypeError, self.field.validate, value)
 
@@ -124,9 +113,9 @@ class TestGenderField(unittest.TestCase):
 
     @cases([0, 1, 2])
     def test_ok(self, value):
-        self.assertIsNone(self.field.validate(value))
+        self.assertEqual(self.field.validate(value), value)
 
-    @cases(['some text', 12.312, {}, []])
+    @cases(['some text', 12.312, {1: 2312}, [1, 2, 3, 1, 2]])
     def test_invalid_type(self, value):
         self.assertRaises(TypeError, self.field.validate, value)
 
