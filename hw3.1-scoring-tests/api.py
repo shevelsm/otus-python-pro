@@ -42,7 +42,7 @@ PENSION_AGE = 65
 
 
 email_pattern = re.compile(r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)")
-phone_pattern = re.compile(r"7(\d{10})")
+phone_pattern = re.compile(r"7(\d{10})$")
 
 
 class Field:
@@ -109,9 +109,10 @@ class BirthDayField(DateField):
     def validate(self, value: str) -> str:
         super().validate(value)
         date = datetime.datetime.strptime(value, "%d.%m.%Y")
-        if datetime.datetime.now().year - date.year > PENSION_AGE:
+        age = datetime.datetime.now().year - date.year
+        if age < 0 or age > PENSION_AGE:
             raise ValueError(
-                "The phone number isn't correct (should start with 7 and has length 11)"
+                "Age should be in range 0 < age <= PENSION_AGE"
             )
         return value
 
