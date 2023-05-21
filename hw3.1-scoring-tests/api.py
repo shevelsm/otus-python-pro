@@ -87,7 +87,7 @@ class EmailField(CharField):
 class PhoneField(Field):
     def validate(self, value: Union[int, str]) -> str:
         if not isinstance(value, (str, int)):
-            raise TypeError("The phone number value should be a string or an integer" )
+            raise TypeError("The phone number value should be a string or an integer")
 
         value = str(value)
         super().validate(value)
@@ -121,7 +121,7 @@ class BirthDayField(DateField):
 class GenderField(Field):
     def validate(self, value: int) -> int:
         if not isinstance(value, int):
-            raise TypeError('GenderField should be a integer')
+            raise TypeError("GenderField should be a integer")
 
         super().validate(value)
         if value not in GENDERS:

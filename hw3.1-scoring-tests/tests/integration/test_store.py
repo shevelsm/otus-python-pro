@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import MagicMock
 
-from store import RedisAsStorage 
+from store import RedisAsStorage
 
 
 class TestStore(unittest.TestCase):
