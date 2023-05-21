@@ -28,6 +28,10 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: "3.x"
-      - name: Test with unittest
+      - name: Install dependencies
         working-directory: ./hw3.1-scoring-tests
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+      - name: Test with unittest
         run: python3 -m unittest -v
