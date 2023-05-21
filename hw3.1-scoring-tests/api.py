@@ -282,9 +282,7 @@ def method_handler(request, context, store):
 class MainHTTPHandler(BaseHTTPRequestHandler):
     logging.debug("MainHTTPHandler")
     router = {"method": method_handler}
-    store = RedisAsStorage(
-        host=os.getenv("REDIS_HOST", "localhost")
-    )
+    store = RedisAsStorage(host=os.getenv("REDIS_HOST", "localhost"))
 
     def get_request_id(self, headers):
         return headers.get("HTTP_X_REQUEST_ID", uuid.uuid4().hex)
