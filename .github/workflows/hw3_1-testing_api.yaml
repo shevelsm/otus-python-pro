@@ -1,0 +1,22 @@
+name: Scoring API
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - "hw3.1-scoring-tests/**"
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+      - name: Test with unittest
+        working-directory: ./hw3.1-scoring-tests
+        run: python3 -m unittest -v
