@@ -1,17 +1,16 @@
-import json
 import datetime
-import logging
 import hashlib
+import json
+import logging
+import os
 import re
-from typing import Any, List, Optional, Union
 import uuid
-from optparse import OptionParser
 from http.server import BaseHTTPRequestHandler, HTTPServer
-
-from store import RedisAsStorage
+from optparse import OptionParser
+from typing import Any, List, Optional, Union
 
 from scoring import get_interests, get_score
-
+from store import RedisAsStorage
 
 SALT = "Otus"
 ADMIN_LOGIN = "admin"
@@ -283,7 +282,9 @@ def method_handler(request, context, store):
 class MainHTTPHandler(BaseHTTPRequestHandler):
     logging.debug("MainHTTPHandler")
     router = {"method": method_handler}
-    store = RedisAsStorage()
+    store = RedisAsStorage(
+        host=os.getenv("REDIS_HOST", "localhost")
+    )
 
     def get_request_id(self, headers):
         return headers.get("HTTP_X_REQUEST_ID", uuid.uuid4().hex)
