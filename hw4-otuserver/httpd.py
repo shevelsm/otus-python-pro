@@ -1,17 +1,159 @@
 import argparse
+from datetime import datetime
 import logging
+import mimetypes
+import os
 import socket
 import traceback
 from typing import Optional
+from urllib.parse import unquote, urlparse
 
+HTTP_PROTOCOL = "HTTP/1.1"
 DOCUMENT_ROOT = "www"
 MAX_NUM_CONNECTIONS = 5
+CHUNK_SIZE = 1024
+MAX_REQUEST_SIZE = 8192
+HEADER_END_INDICATOR = "\r\n\r\n"
+
+HTTP_200_OK = 200
+HTTP_400_BAD_REQUEST = 400
+HTTP_403_FORBIDDEN = 403
+HTTP_404_NOT_FOUND = 404
+HTTP_405_METHOD_NOT_ALLOWED = 405
+RESPONSE_CODES = {
+    HTTP_200_OK: "OK",
+    HTTP_400_BAD_REQUEST: "Bad Request",
+    HTTP_403_FORBIDDEN: "Forbidden",
+    HTTP_404_NOT_FOUND: "Not Found",
+    HTTP_405_METHOD_NOT_ALLOWED: "Method Not Allowed",
+}
 
 
-def handle_request(connection, address, document_root):
-    response_data = "HTTP/1.0 200 OK\n\nHello {}".format(address)
-    connection.sendall(response_data.encode())
-    connection.close()
+class HTTPRequest:
+    methods = ("GET", "HEAD")
+
+    def __init__(self, document_root):
+        self.document_root = document_root
+
+    def parse(self, request_data):
+        lines = request_data.split("\r\n")
+        try:
+            method, url, version = lines[0].split()
+            method = method.upper()
+        except ValueError:
+            return HTTP_400_BAD_REQUEST, "?", "?", {}
+
+        headers = {}
+        for line in lines[1:]:
+            if not line.split():
+                break
+            k, v = line.split(":", 1)
+            headers[k.lower()] = v.strip()
+
+        if method not in self.methods:
+            return HTTP_405_METHOD_NOT_ALLOWED, method, url, headers
+
+        code, path = self.parse_url(url)
+
+        return code, method, path, headers
+
+    def parse_url(self, url):
+        """
+        Parse request url
+
+        Args:
+            url (str): Request url
+
+        Returns:
+            (int, str): (Response code, Request document path)
+        """
+        parsed_path = unquote(urlparse(url).path)
+        path = self.document_root + os.path.abspath(parsed_path)
+
+        is_directory = os.path.isdir(path)
+        if is_directory:
+            if not path.endswith("/"):
+                path += "/"
+            path = os.path.join(path, "index.html")
+
+        if not is_directory and parsed_path.endswith("/"):
+            return HTTP_404_NOT_FOUND, path
+        if path.endswith("/") or not os.path.isfile(path):
+            return HTTP_404_NOT_FOUND, path
+
+        return HTTP_200_OK, path
+
+
+class HTTPResponse(object):
+    def __init__(self, code, method, path, request_headers):
+        self.code = code
+        self.method = method
+        self.path = path
+        self.request_headers = request_headers
+
+    def process(self):
+        file_size = 0
+        content_type = "text/plain"
+        body = b""
+        if self.code == HTTP_200_OK:
+            file_size = self.request_headers.get(
+                "content-length", os.path.getsize(self.path)
+            )
+            if self.method == "GET":
+                content_type = mimetypes.guess_type(self.path)[0]
+                with open(self.path, "rb") as file:
+                    body = file.read(file_size)
+
+        first_line = "{} {} {}".format(
+            HTTP_PROTOCOL, self.code, RESPONSE_CODES[self.code]
+        )
+        headers = {
+            "Date": datetime.now().strftime("%a, %d %b %Y %H:%M:%S GMT"),
+            "Server": "Python-edu-server/0.1.0",
+            "Connection": "close",
+            "Content-Length": file_size,
+            "Content-Type": content_type,
+        }
+        headers = "\r\n".join("{}: {}".format(k, v) for k, v in headers.items())
+        response = (
+            "{}\r\n{}{}".format(first_line, headers, HEADER_END_INDICATOR).encode()
+            + body
+        )
+        return response
+
+
+def receive(connection):
+    fragments = []
+    while True:
+        chunk = connection.recv(CHUNK_SIZE)
+        if (
+            not chunk
+            or HEADER_END_INDICATOR in request
+            or len(request) >= MAX_REQUEST_SIZE
+        ):
+            break
+        fragments.append(chunk)
+    request = "".join(fragments)
+    return request
+
+
+def handle_request(
+    connection: socket.socket, address: tuple, document_root: str
+) -> None:
+    try:
+        request_data = receive(connection)
+        request = HTTPRequest(document_root)
+        code, method, path, headers = request.parse(request_data)
+        response = HTTPResponse(code, method, path, headers)
+        response_data = response.process()
+
+        logging.info('"{} {} {}" {}'.format(method, path, HTTP_PROTOCOL, code))
+        connection.sendall(response_data)
+    except:
+        logging.exception("Error while sending response to {}".format(address))
+    finally:
+        logging.debug("Closing socket for {}".format(address))
+        connection.close()
 
 
 class HTTPServer:
