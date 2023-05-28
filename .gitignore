@@ -134,3 +134,4 @@ dmypy.json
 
 hw1-advanced_basics/log_analyzer/reports/report-*.html
 hw1-advanced_basics/log_analyzer/log/*
+hw4-otuserver/www/httptest

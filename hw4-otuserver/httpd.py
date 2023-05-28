@@ -125,12 +125,10 @@ class HTTPResponse(object):
 def receive(connection):
     fragments = []
     while True:
-        chunk = connection.recv(CHUNK_SIZE)
-        if (
-            not chunk
-            or HEADER_END_INDICATOR in request
-            or len(request) >= MAX_REQUEST_SIZE
-        ):
+        chunk = connection.recv(CHUNK_SIZE).decode()
+        if not chunk:
+            raise ConnectionError
+        if not chunk or len(fragments) * CHUNK_SIZE >= MAX_REQUEST_SIZE:
             break
         fragments.append(chunk)
     request = "".join(fragments)
