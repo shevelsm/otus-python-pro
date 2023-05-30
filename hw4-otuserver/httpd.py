@@ -84,7 +84,7 @@ class HTTPRequest:
         return HTTP_200_OK, path
 
 
-class HTTPResponse(object):
+class HTTPResponse:
     def __init__(self, code, method, path, request_headers):
         self.code = code
         self.method = method
@@ -128,7 +128,8 @@ def receive(connection):
         chunk = connection.recv(CHUNK_SIZE).decode()
         if not chunk:
             raise ConnectionError
-        if not chunk or len(fragments) * CHUNK_SIZE >= MAX_REQUEST_SIZE:
+        if not chunk or HEADER_END_INDICATOR in chunk or len(fragments) * CHUNK_SIZE >= MAX_REQUEST_SIZE:
+            fragments.append(chunk)
             break
         fragments.append(chunk)
     request = "".join(fragments)
@@ -189,7 +190,7 @@ class HTTPServer:
 
 
 def run_server(host: str, port: int, document_root: str):
-    logging.info("Starting server at http://{}:{}".format(host, port))
+    logging.info("Starting server at http://{}:{} with root dir - {}".format(host, port, document_root))
     server = HTTPServer(host, port, document_root)
     server.run()
     server.serve_forever()
@@ -234,5 +235,8 @@ def parse_arguments() -> argparse.Namespace:
 
 if __name__ == "__main__":
     args = parse_arguments()
-    init_logging_config()
+    if args.debug:
+        init_logging_config(level="DEBUG")
+    else:
+        init_logging_config(level="INFO")
     run_server(args.host, args.port, args.root)
