@@ -1,0 +1,25 @@
+name: OTUServer
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - "hw4-otuserver/**"
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+      - name: Run http server
+        working-directory: ./hw4-otuserver
+        run: python3 httpd.py -p 8080 --root www
+      - name: Test http server
+        working-directory: ./hw4-otuserver
+        run: python3 httptest.py
