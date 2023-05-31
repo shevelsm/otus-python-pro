@@ -22,7 +22,7 @@ jobs:
         run: git clone https://github.com/s-stupnikov/http-test-suite www
       - name: Replace 80 port with 8080 for testing
         working-directory: ./hw4-otuserver/www
-        run: sed -i 's/80/8080/g' hello.txt
+        run: sed -i 's/80/8080/g' httptest.py
       - name: Run http server
         working-directory: ./hw4-otuserver
         run: python3 httpd.py -p 8080 --root www
