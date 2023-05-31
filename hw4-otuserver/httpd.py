@@ -59,15 +59,6 @@ class HTTPRequest:
         return code, method, path, headers
 
     def parse_url(self, url):
-        """
-        Parse request url
-
-        Args:
-            url (str): Request url
-
-        Returns:
-            (int, str): (Response code, Request document path)
-        """
         parsed_path = unquote(urlparse(url).path)
         path = self.document_root + os.path.abspath(parsed_path)
 

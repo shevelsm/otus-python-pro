@@ -17,12 +17,15 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: "3.x"
-      - name: Prepare for testing
+      - name: Clone testing repo
         working-directory: ./hw4-otuserver
         run: git clone https://github.com/s-stupnikov/http-test-suite www
+      - name: Replace 80 port with 8080 for testing
+        working-directory: ./hw4-otuserver/www
+        run: sed -i 's/80/8080/g' hello.txt
       - name: Run http server
         working-directory: ./hw4-otuserver
-        run: python3 httpd.py -p 80 --root www
+        run: python3 httpd.py -p 8080 --root www
       - name: Test http server
-        working-directory: ./hw4-otuserver
+        working-directory: ./hw4-otuserver/www
         run: python3 httptest.py
