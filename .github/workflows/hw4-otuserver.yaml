@@ -17,9 +17,12 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: "3.x"
+      - name: Prepare for testing
+        working-directory: ./hw4-otuserver
+        run: git clone https://github.com/s-stupnikov/http-test-suite www
       - name: Run http server
         working-directory: ./hw4-otuserver
-        run: python3 httpd.py -p 8080 --root www
+        run: python3 httpd.py -p 80 --root www
       - name: Test http server
         working-directory: ./hw4-otuserver
         run: python3 httptest.py
