@@ -129,6 +129,7 @@ def receive(connection):
             break
         fragments.append(chunk)
     request = "".join(fragments)
+    logging.debug("Final request is:\n{}".format(request))
     return request
 
 
