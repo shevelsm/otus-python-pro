@@ -60,6 +60,7 @@ class HTTPRequest:
 
     def parse_url(self, url):
         parsed_path = unquote(urlparse(url).path)
+        logging.debug("Parsed request path: {}".format(parsed_path))
         path = self.document_root + os.path.abspath(parsed_path)
 
         is_directory = os.path.isdir(path)

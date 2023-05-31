@@ -25,7 +25,7 @@ jobs:
         run: sed -i 's/80/8080/g' httptest.py
       - name: Run http server
         working-directory: ./hw4-otuserver
-        run: python3 httpd.py -p 8080 --root www
+        run: python3 httpd.py -p 8080 --root www &
       - name: Test http server
         working-directory: ./hw4-otuserver/www
         run: python3 httptest.py
