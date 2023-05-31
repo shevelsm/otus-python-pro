@@ -129,7 +129,11 @@ def receive(connection):
         chunk = connection.recv(CHUNK_SIZE).decode()
         if not chunk:
             raise ConnectionError
-        if not chunk or HEADER_END_INDICATOR in chunk or len(fragments) * CHUNK_SIZE >= MAX_REQUEST_SIZE:
+        if (
+            not chunk
+            or HEADER_END_INDICATOR in chunk
+            or len(fragments) * CHUNK_SIZE >= MAX_REQUEST_SIZE
+        ):
             fragments.append(chunk)
             break
         fragments.append(chunk)
@@ -191,24 +195,28 @@ class HTTPServer:
 
 
 def run_server(host: str, port: int, workers: int, document_root: str):
-    logging.info("Starting server at http://{}:{} with root dir - {}".format(host, port, document_root))
+    logging.info(
+        "Starting server at http://{}:{} with root dir - {}".format(
+            host, port, document_root
+        )
+    )
     server = HTTPServer(host, port, document_root)
     server.run()
-    
+
     processes = []
     try:
         for _ in range(workers):
             process = multiprocessing.Process(target=server.serve_forever)
             processes.append(process)
             process.start()
-            logging.debug('Worker with id {} was started'.format(process.pid))
+            logging.debug("Worker with id {} was started".format(process.pid))
         for process in processes:
             process.join()
     except KeyboardInterrupt:
         for process in processes:
             if process:
                 process.terminate()
-                logging.debug('Worker with id {} was terminated'.format(process.pid))
+                logging.debug("Worker with id {} was terminated".format(process.pid))
 
 
 def init_logging_config(filename: Optional[str] = None, level: str = "INFO") -> None:
@@ -233,7 +241,9 @@ def parse_arguments() -> argparse.Namespace:
 
     parser.add_argument("-s", "--host", type=str, default="127.0.0.1", help="Hostname")
     parser.add_argument("-p", "--port", type=int, default=8080, help="Port number")
-    parser.add_argument("-w", "--workers", type=int, default=1, help="Number of workers")
+    parser.add_argument(
+        "-w", "--workers", type=int, default=1, help="Number of workers"
+    )
     parser.add_argument(
         "-r",
         "--root",
