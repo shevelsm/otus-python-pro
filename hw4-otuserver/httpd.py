@@ -235,7 +235,7 @@ def parse_arguments() -> argparse.Namespace:
     parser.add_argument("-s", "--host", type=str, default="127.0.0.1", help="Hostname")
     parser.add_argument("-p", "--port", type=int, default=8080, help="Port number")
     parser.add_argument(
-        "-w", "--workers", type=int, default=1, help="Number of workers"
+        "-w", "--workers", type=int, default=5, help="Number of workers"
     )
     parser.add_argument(
         "-r",

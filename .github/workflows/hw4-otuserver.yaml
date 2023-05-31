@@ -17,6 +17,10 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: "3.x"
+      - name: Install ap tool
+        run: |
+          sudo apt-get update
+          sudo apt-get install apache2-utils
       - name: Clone testing repo
         working-directory: ./hw4-otuserver
         run: git clone https://github.com/s-stupnikov/http-test-suite www
@@ -25,7 +29,9 @@ jobs:
         run: sed -i 's/80/8080/g' httptest.py
       - name: Run http server
         working-directory: ./hw4-otuserver
-        run: python3 httpd.py -p 8080 --root www &
+        run: python3 httpd.py -p 8080 -w 2 -r www &
       - name: Test http server
         working-directory: ./hw4-otuserver/www
         run: python3 httptest.py
+      - name: Load testing results with Apache Benchmark
+        run: ab -n 50000 -c 100 -r http://127.0.0.1:8080/httptest/dir2/page.html
