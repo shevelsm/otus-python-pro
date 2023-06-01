@@ -14,6 +14,7 @@ DOCUMENT_ROOT = "www"
 MAX_NUM_CONNECTIONS = 5
 CHUNK_SIZE = 1024
 MAX_REQUEST_SIZE = 8192
+CONNETION_TIMEOUT_SEC = 5
 HEADER_END_INDICATOR = "\r\n\r\n"
 
 HTTP_200_OK = 200
@@ -118,9 +119,13 @@ class HTTPResponse:
 def receive(connection):
     fragments = []
     while True:
-        chunk = connection.recv(CHUNK_SIZE).decode()
-        if not chunk:
-            raise ConnectionError
+        try:
+            chunk = connection.recv(CHUNK_SIZE).decode()
+        except TimeoutError:
+            logging.debug('Timeout for chunk recieving...')
+            
+            break
+
         if (
             not chunk
             or HEADER_END_INDICATOR in chunk
@@ -128,9 +133,9 @@ def receive(connection):
         ):
             fragments.append(chunk)
             break
+
         fragments.append(chunk)
     request = "".join(fragments)
-    logging.debug("Final request is:\n{}".format(request))
     return request
 
 
@@ -159,7 +164,7 @@ class HTTPServer:
         host: str = "localhost",
         port: int = 8080,
         document_root: str = DOCUMENT_ROOT,
-        max_num_connections: str = MAX_NUM_CONNECTIONS,
+        max_num_connections: int = 0,
     ) -> None:
         self.host = host
         self.port = port
@@ -179,6 +184,7 @@ class HTTPServer:
     def serve_forever(self) -> None:
         while True:
             client_connection, client_address = self.socket.accept()
+            client_connection.settimeout(CONNETION_TIMEOUT_SEC)
             logging.debug("Obtain request from {}".format(client_address))
             handle_request(
                 client_connection,
