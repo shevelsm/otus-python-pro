@@ -24,15 +24,18 @@ def init_logging_config(filename: Optional[str] = None, level: str = "INFO") -> 
 def check_valid_ip(ip_addres: str) -> bool:
     try:
         socket.inet_aton(ip_addres)
-        return "True"
+        return True
     except socket.error:
-        return "False"
+        return False
 
 
 def application(env, start_response):
     init_logging_config("ip2w.log")
     ip_address = env["REQUEST_URI"].replace("/ip2w/", "")
     logging.debug(env)
-    response = check_valid_ip(ip_address)
+    if check_valid_ip(ip_address):
+        response = ip_address
+    else:
+        response = "Bad IP"
     start_response("200 OK", [("Content-Type", "text/html")])
-    return [bytes(response, encoding="utf-8")]
+    return [bytes(response + "\n", encoding="utf-8")]
