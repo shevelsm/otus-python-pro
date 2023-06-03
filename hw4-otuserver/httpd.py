@@ -122,7 +122,7 @@ def receive(connection):
         try:
             chunk = connection.recv(CHUNK_SIZE).decode()
         except TimeoutError:
-            logging.debug('Timeout for chunk recieving...')
+            logging.debug("Timeout for chunk recieving...")
             break
 
         if (

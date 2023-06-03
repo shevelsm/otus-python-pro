@@ -53,3 +53,98 @@ python3 httptest.py
 # Load testing with "Apache Benchmark"
 ab -n 50000 -c 100 -r http://127.0.0.1:8080/httptest/dir2/page.html
 ```
+
+## Результаты тестов сервера
+
+Результаты **http-test-suite** теста:
+
+``` bash
+ *  Executing task in folder homeworks: python httptest.py 
+
+directory index file exists ... ok
+document root escaping forbidden ... ok
+Send bad http headers ... ok
+file located in nested folders ... ok
+absent file returns 404 ... ok
+urlencoded filename ... ok
+file with two dots in name ... ok
+query string after filename ... ok
+slash after filename ... ok
+filename with spaces ... ok
+Content-Type for .css ... ok
+Content-Type for .gif ... ok
+Content-Type for .html ... ok
+Content-Type for .jpeg ... ok
+Content-Type for .jpg ... ok
+Content-Type for .js ... ok
+Content-Type for .png ... ok
+Content-Type for .swf ... ok
+head method support ... ok
+directory index file absent ... ok
+large file downloaded correctly ... ok
+post method forbidden ... ok
+Server header exists ... ok
+
+----------------------------------------------------------------------
+Ran 23 tests in 0.097s
+```
+
+Результаты **Apache Benchmark** теста (timeout = 5 секунд):
+
+``` bash
+This is ApacheBench, Version 2.3 <$Revision: 1843412 $>
+Copyright 1996 Adam Twiss, Zeus Technology Ltd, http://www.zeustech.net/
+Licensed to The Apache Software Foundation, http://www.apache.org/
+
+Benchmarking 127.0.0.1 (be patient)
+Completed 5000 requests
+Completed 10000 requests
+Completed 15000 requests
+Completed 20000 requests
+Completed 25000 requests
+Completed 30000 requests
+Completed 35000 requests
+Completed 40000 requests
+Completed 45000 requests
+Completed 50000 requests
+Finished 50000 requests
+
+
+Server Software:        Python-edu-server/0.1.0
+Server Hostname:        127.0.0.1
+Server Port:            8080
+
+Document Path:          /httptest/dir2/page.html
+Document Length:        38 bytes
+
+Concurrency Level:      100
+Time taken for tests:   117.163 seconds
+Complete requests:      50000
+Failed requests:        263
+   (Connect: 0, Receive: 83, Length: 97, Exceptions: 83)
+Non-2xx responses:      14
+Total transferred:      9536415 bytes
+HTML transferred:       1896846 bytes
+Requests per second:    426.75 [#/sec] (mean)
+Time per request:       234.327 [ms] (mean)
+Time per request:       2.343 [ms] (mean, across all concurrent requests)
+Transfer rate:          79.49 [Kbytes/sec] received
+
+Connection Times (ms)
+              min  mean[+/-sd] median   max
+Connect:        0   22 375.1      0   15580
+Processing:     1  165 4147.3      2  114000
+Waiting:        0   12 561.9      1   70130
+Total:          1  187 4395.2      2  117150
+
+Percentage of the requests served within a certain time (ms)
+  50%      2
+  66%      2
+  75%      2
+  80%      2
+  90%      3
+  95%      3
+  98%      3
+  99%      6
+ 100%  117150 (longest request)
+```
