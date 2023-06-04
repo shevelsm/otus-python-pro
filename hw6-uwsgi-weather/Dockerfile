@@ -3,7 +3,7 @@ FROM centos:7
 RUN yum install -y epel-release \
     && yum install -y python3-devel nginx gcc \
     && yum -y clean all \
-    && pip3 install uwsgi
+    && pip3 install uwsgi requests
 
 WORKDIR /srv/ip2w
 
