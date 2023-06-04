@@ -2,7 +2,7 @@ import logging
 import socket
 import traceback
 from configparser import ConfigParser
-from typing import Any, Optional, Tuple, Union
+from typing import Optional, Tuple, Union
 
 import requests
 
@@ -72,6 +72,37 @@ def get_city_by_ip(ip: str, config: ConfigParser) -> Union[int, str]:
     return HTTP_200_OK, "{},{}".format(city, country)
 
 
+def get_weather_by_city(city: str, config: ConfigParser):
+    code, response = perform_request(
+        OPENWEATHER_URL.format(city, config["api_key"]), config
+    )
+    if code != HTTP_200_OK:
+        return code, response
+
+    if response.get("cod") != HTTP_200_OK:
+        return HTTP_500_INTERNAL_ERROR, response.get("message")
+
+    temp = str(response["main"]["temp"])
+    conditions = ", ".join(
+        [condition["description"] for condition in response["weather"]]
+    )
+    weather = {
+        "city": response["name"],
+        "temp": temp if temp.startswith("-") else "+" + temp,
+        "conditions": conditions,
+    }
+    return HTTP_200_OK, weather
+
+
+def load_weather_data(ip: str, config: ConfigParser) -> Union[int, str]:
+    code, city = get_city_by_ip(ip, config)
+    if code != HTTP_200_OK:
+        return code, city
+
+    code, weather = get_weather_by_city(city, config)
+    return code, weather
+
+
 def application(env, start_response):
     config = get_config_values(CONFIG_PATH)
     init_logging_config(config["ip2w"]["log_path"], config["ip2w"]["log_level"])
@@ -83,7 +114,7 @@ def application(env, start_response):
             "Incorrect IP address - {}. Please try another one...".format(ip_address),
         )
     else:
-        code, response = get_city_by_ip(ip_address, config)
+        code, response = load_weather_data(ip_address, config)
 
     start_response(str(code), [("Content-Type", "text/html")])
-    return [bytes(response + "\n", encoding="utf-8")]
+    return [bytes(response, encoding="utf-8")]
