@@ -1,3 +1,4 @@
+import json
 import logging
 import socket
 import traceback
@@ -74,10 +75,12 @@ def get_city_by_ip(ip: str, config: ConfigParser) -> Union[int, str]:
 
 def get_weather_by_city(city: str, config: ConfigParser):
     code, response = perform_request(
-        OPENWEATHER_URL.format(city, config["api_key"]), config
+        OPENWEATHER_URL.format(city, config["ip2w"]["weather_api_key"]), config
     )
     if code != HTTP_200_OK:
         return code, response
+
+    logging.debug("OPENWEATHER response: {}".format(response))
 
     if response.get("cod") != HTTP_200_OK:
         return HTTP_500_INTERNAL_ERROR, response.get("message")
@@ -100,6 +103,8 @@ def load_weather_data(ip: str, config: ConfigParser) -> Union[int, str]:
         return code, city
 
     code, weather = get_weather_by_city(city, config)
+    logging.debug("load_weather response: {}".format(weather))
+
     return code, weather
 
 
@@ -107,7 +112,7 @@ def application(env, start_response):
     config = get_config_values(CONFIG_PATH)
     init_logging_config(config["ip2w"]["log_path"], config["ip2w"]["log_level"])
     ip_address = env["REQUEST_URI"].replace("/ip2w/", "")
-    logging.debug("IP address from the request - {}".format(ip_address))
+    logging.info("IP address from the request - {}".format(ip_address))
     if not check_valid_ip(ip_address):
         code, response = (
             HTTP_400_BAD_REQUEST,
@@ -115,6 +120,11 @@ def application(env, start_response):
         )
     else:
         code, response = load_weather_data(ip_address, config)
+
+    logging.info("{}, {}".format(code, response))
+
+    if not isinstance(response, str):
+        response = json.dumps(response)
 
     start_response(str(code), [("Content-Type", "text/html")])
     return [bytes(response, encoding="utf-8")]
