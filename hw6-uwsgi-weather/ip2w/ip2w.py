@@ -7,7 +7,7 @@ from typing import Optional, Tuple, Union
 
 import requests
 
-CONFIG_PATH = "ip2w.ini"
+CONFIG_PATH = "config.ini"
 IPINFO_URL = "https://ipinfo.io/{}"
 OPENWEATHER_URL = (
     "http://api.openweathermap.org/data/2.5/weather?q={}&units=metric&lang=ru&APPID={}"
