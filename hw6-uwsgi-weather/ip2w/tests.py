@@ -1,9 +1,16 @@
 import unittest
 
-import requests
-from ip2w import CONFIG_PATH, check_valid_ip, get_city_by_ip, get_config_values
+from ip2w import (
+    CONFIG_PATH,
+    HTTP_200_OK,
+    check_valid_ip,
+    get_city_by_ip,
+    get_config_values,
+    load_weather_data,
+)
 
 config = get_config_values(CONFIG_PATH)
+BAD_GATEWAY = 502
 
 
 def cases(cases_):
@@ -29,7 +36,7 @@ class TestAPI(unittest.TestCase):
         ]
     )
     def test_correct_city(self, ip_address, city_correct):
-        code, city = get_city_by_ip(ip=ip_address, config=config)
+        _, city = get_city_by_ip(ip=ip_address, config=config)
         self.assertEqual(city, city_correct)
 
     @cases(
@@ -44,6 +51,19 @@ class TestAPI(unittest.TestCase):
     def test_valid_ip(self, ip_address, bool_value):
         """Is ip checked correctly?"""
         self.assertEqual(check_valid_ip(ip_address), bool_value)
+
+    @cases(
+        [
+            "198.100.200.10",
+            "176.14.221.123",
+        ]
+    )
+    def test_functional_good_ip(self, ip):
+        code, response = load_weather_data(ip, config)
+        self.assertEqual(code, HTTP_200_OK)
+        self.assertEqual(len(response), 3)
+        self.assertTrue(response.get("temp"))
+        self.assertTrue(response.get("city"))
 
 
 if __name__ == "__main__":
