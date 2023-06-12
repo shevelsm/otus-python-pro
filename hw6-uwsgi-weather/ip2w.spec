@@ -40,7 +40,7 @@ Git version: %{git_version} (branch: %{git_branch})
 
 
 %{__install} -pD -m 644 ip2w/%{name}.py %{buildroot}/%{__bindir}/%{name}.py
-%{__install} -pD -m 644 ip2w/config_%{name}.json %{buildroot}/%{__etcdir}/%{name}.ini
+%{__install} -pD -m 644 ip2w/config.ini %{buildroot}/%{__etcdir}/%{name}.ini
 %{__install} -pD -m 644 ip2w/%{name}.ini %{buildroot}/%{__etcdir}/%{name}.ini
 %{__install} -pD -m 644 %{name}.service %{buildroot}/%{__systemddir}/%{name}.service
 %{__install} -pD -m 644 nginx_%{name}.conf %{buildroot}/%{__nginxconfdir}/nginx_%{name}.conf
