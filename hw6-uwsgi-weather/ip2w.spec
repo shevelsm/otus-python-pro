@@ -23,7 +23,7 @@ Git version: %{git_version} (branch: %{git_branch})
 
 %define __etcdir    /usr/local/etc
 %define __logdir    /val/log/
-%define __bindir    /usr/local/ip2w/
+%define __bindir    /usr/local/bin/
 %define __systemddir	/usr/lib/systemd/system/
 %define __nginxconfdir 	/etc/nginx/sites-available/
 
