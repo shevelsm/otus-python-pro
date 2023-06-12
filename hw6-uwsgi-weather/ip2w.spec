@@ -12,7 +12,7 @@ Requires(post): systemd
 Requires(preun): systemd
 Requires(postun): systemd
 BuildRequires: systemd
-Requires:	python uwsgi nginx
+Requires:	python3-devel uwsgi nginx
 Summary:  The ip to weather centos deamon
 
 
@@ -25,6 +25,7 @@ Git version: %{git_version} (branch: %{git_branch})
 %define __logdir    /val/log/
 %define __bindir    /usr/local/ip2w/
 %define __systemddir	/usr/lib/systemd/system/
+%define __nginxconfdir 	/etc/nginx/sites-available/
 
 %prep
 
