@@ -3,7 +3,6 @@ import logging
 import socket
 import traceback
 from configparser import ConfigParser
-from typing import Optional, Tuple, Union
 
 import requests
 
@@ -18,7 +17,7 @@ HTTP_400_BAD_REQUEST = 400
 HTTP_500_INTERNAL_ERROR = 500
 
 
-def init_logging_config(filename: Optional[str] = None, level: str = "INFO") -> None:
+def init_logging_config(filename=None, level="INFO"):
     try:
         logging.basicConfig(
             filename=filename,
@@ -35,14 +34,14 @@ def init_logging_config(filename: Optional[str] = None, level: str = "INFO") -> 
     return True
 
 
-def get_config_values(config_path: str = None) -> ConfigParser:
+def get_config_values(config_path=None):
     config = ConfigParser()
     config.read(config_path, encoding="utf-8")
 
     return config
 
 
-def check_valid_ip(ip: str) -> bool:
+def check_valid_ip(ip) -> bool:
     try:
         socket.inet_aton(ip)
         return True
@@ -50,7 +49,7 @@ def check_valid_ip(ip: str) -> bool:
         return False
 
 
-def perform_request(url: str, config: ConfigParser) -> Tuple[int, Union[dict, str]]:
+def perform_request(url, config):
     retries = int(config["ip2w"]["retries"])
     timeout = int(config["ip2w"]["timeout"])
     for _ in range(retries):
@@ -60,7 +59,7 @@ def perform_request(url: str, config: ConfigParser) -> Tuple[int, Union[dict, st
     return HTTP_500_INTERNAL_ERROR, "Maximum retries exceeded"
 
 
-def get_city_by_ip(ip: str, config: ConfigParser) -> Union[int, str]:
+def get_city_by_ip(ip, config):
     code, response = perform_request(IPINFO_URL.format(ip), config)
     if code != HTTP_200_OK:
         return code, response
@@ -73,7 +72,7 @@ def get_city_by_ip(ip: str, config: ConfigParser) -> Union[int, str]:
     return HTTP_200_OK, "{},{}".format(city, country)
 
 
-def get_weather_by_city(city: str, config: ConfigParser):
+def get_weather_by_city(city, config):
     code, response = perform_request(
         OPENWEATHER_URL.format(city, config["ip2w"]["weather_api_key"]), config
     )
@@ -97,7 +96,7 @@ def get_weather_by_city(city: str, config: ConfigParser):
     return HTTP_200_OK, weather
 
 
-def load_weather_data(ip: str, config: ConfigParser) -> Union[int, str]:
+def load_weather_data(ip, config):
     code, city = get_city_by_ip(ip, config)
     if code != HTTP_200_OK:
         return code, city
