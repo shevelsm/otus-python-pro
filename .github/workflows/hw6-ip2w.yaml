@@ -5,7 +5,7 @@ on:
     branches:
       - master
     paths:
-      - "hw6-uwsgi-weather/ip2w/**"
+      - "hw6-uwsgi-weather/**"
 
 jobs:
   tests:
