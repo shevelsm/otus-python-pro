@@ -33,6 +33,8 @@ systemctl start nginx
 
 ## Request Example
 
+Пример использования сервиса:
+
 ```bash
 $ curl http://localhost/ip2w/178.219.186.12
 # {"city": "Mytishchi", "temp": "+17", "conditions": "ясно"}
