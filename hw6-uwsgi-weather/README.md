@@ -35,7 +35,7 @@ systemctl start nginx
 
 ```bash
 $ curl http://localhost/ip2w/178.219.186.12
-# {"city": "Mytishchi", "temp": "+", "conditions": "ясно"}
+# {"city": "Mytishchi", "temp": "+17", "conditions": "ясно"}
 ```
 
 ## Tests
