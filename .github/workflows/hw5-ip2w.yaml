@@ -5,7 +5,7 @@ on:
     branches:
       - master
     paths:
-      - "hw6-uwsgi-weather/**"
+      - "hw5-uwsgi-weather/**"
 
 jobs:
   tests:
@@ -18,8 +18,8 @@ jobs:
         with:
           python-version: "3.x"
       - name: Install requirements
-        working-directory: ./hw6-uwsgi-weather
+        working-directory: ./hw5-uwsgi-weather
         run: pip install -r requirements.txt
       - name: Test with unittest
-        working-directory: ./hw6-uwsgi-weather/ip2w
+        working-directory: ./hw5-uwsgi-weather/ip2w
         run: python3 -m unittest -v
