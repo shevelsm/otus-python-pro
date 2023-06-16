@@ -47,6 +47,9 @@ class LogisticRegression:
             # replacement is faster than sampling without replacement.              #
             #########################################################################
 
+            indices = np.random.choice(num_train, size=batch_size)
+            X_batch = X[indices]
+            y_batch = y[indices]
 
             #########################################################################
             #                       END OF YOUR CODE                                #
@@ -61,6 +64,7 @@ class LogisticRegression:
             # Update the weights using the gradient and the learning rate.          #
             #########################################################################
 
+            self.w -= gradW * learning_rate
 
             #########################################################################
             #                       END OF YOUR CODE                                #
@@ -138,15 +142,28 @@ class LogisticRegression:
         loss = 0
         # Compute loss and gradient. Your code should not contain python loops.
 
+        # Loss = 1/m * (-y' * log(h) - (1 - y') * log(1 - h))
+        # Gradient = 1/m * Xt(g(XQ) - y)
+
+        h = self.sigmoid(X_batch.dot(self.w))
+        m = X_batch.shape[0]
+
+        loss = np.dot(-y_batch, np.log(h)) - np.dot((1 - y_batch), np.log(1 - h)).mean()
+        dw = X_batch.T.dot(h - y_batch)
+
 
         # Right now the loss is a sum over all training examples, but we want it
         # to be an average instead so we divide by num_train.
         # Note that the same thing must be done with gradient.
 
+        loss = loss / m
+        dw = dw / m
 
         # Add regularization to the loss and gradient.
         # Note that you have to exclude bias term in regularization.
 
+        loss += reg * np.dot(self.w[:-1], self.w[:-1])
+        dw[:-1] += reg * self.w[:-1]
 
         return loss, dw
 
