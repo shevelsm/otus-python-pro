@@ -7,8 +7,16 @@ class LogisticRegression:
         self.w = None
         self.loss_history = None
 
-    def train(self, X, y, learning_rate=1e-3, reg=1e-5, num_iters=100,
-              batch_size=200, verbose=False):
+    def train(
+        self,
+        X,
+        y,
+        learning_rate=1e-3,
+        reg=1e-5,
+        num_iters=100,
+        batch_size=200,
+        verbose=False,
+    ):
         """
         Train this classifier using stochastic gradient descent.
 
@@ -71,7 +79,7 @@ class LogisticRegression:
             #########################################################################
 
             if verbose and it % 100 == 0:
-                print('iteration %d / %d: loss %f' % (it, num_iters, loss))
+                print("iteration %d / %d: loss %f" % (it, num_iters, loss))
 
         return self
 
@@ -96,7 +104,8 @@ class LogisticRegression:
         # Hint: It might be helpful to use np.vstack and np.sum                   #
         ###########################################################################
 
-
+        h = self.sigmoid(X.dot(self.w))
+        y_proba = np.vstack((1.0 - h, h)).T
 
         ###########################################################################
         #                           END OF YOUR CODE                              #
@@ -120,8 +129,9 @@ class LogisticRegression:
         # TODO:                                                                   #
         # Implement this method. Store the predicted labels in y_pred.            #
         ###########################################################################
+
         y_proba = self.predict_proba(X, append_bias=True)
-        y_pred = ...
+        y_pred = y_proba.argmax(axis=1)
 
         ###########################################################################
         #                           END OF YOUR CODE                              #
@@ -151,7 +161,6 @@ class LogisticRegression:
         loss = np.dot(-y_batch, np.log(h)) - np.dot((1 - y_batch), np.log(1 - h)).mean()
         dw = X_batch.T.dot(h - y_batch)
 
-
         # Right now the loss is a sum over all training examples, but we want it
         # to be an average instead so we divide by num_train.
         # Note that the same thing must be done with gradient.
@@ -170,3 +179,7 @@ class LogisticRegression:
     @staticmethod
     def append_biases(X):
         return sparse.hstack((X, np.ones(X.shape[0])[:, np.newaxis])).tocsr()
+
+    @staticmethod
+    def sigmoid(x):
+        return 1.0 / (1.0 + np.exp(-x))
